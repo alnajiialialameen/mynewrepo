@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<form id="addAccountForm">
+    <input type="text" id="accountName" placeholder="Account Name" required />
+    <select id="parentAccountId">
+        <option value="">No Parent</option>
+        @foreach (var account in ViewBag.AllAccounts)
+        {
+            <option value="@account.AccountId">@account.AccountName</option>
+        }
+    </select>
+    <button type="submit">Add Account</button>
+</form>
+
+
+
+ 
+
+
+
+<style>
+    #tree-simple .node {
+        border: 2px solid green;
+        padding: 10px;
+    }
+
+</style>
+
+
+
+
+@using Newtonsoft.Json
+
+<div id="tree-simple"></div>
+<script>
+    var chart_config = {
+        chart: {
+            container: "#tree-simple"
+        },
+        nodeStructure: @Html.Raw(JsonConvert.SerializeObject(((List<object>)ViewBag.TreeData).FirstOrDefault()))
+    };
+    new Treant(chart_config);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#addAccountForm').on('submit', function(e) {
+            e.preventDefault();
+            var accountName = $('#accountName').val();
+            var parentAccountId = $('#parentAccountId').val();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("AddAccount", "Tree")',
+                data: {
+                    accountName: accountName,
+                    parentAccountId: parentAccountId
+                },
+                success: function(response) {
+                    // On success, refresh the tree
+                    refreshTree();
+                }
+            });
+        });
+
+        function refreshTree() {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetTreeData", "Tree")',
+                success: function(data) {
+                    var chart_config = {
+                        chart: {
+                            container: "#tree-simple"
+                        },
+                        nodeStructure: data[0]
+                    };
+                    new Treant(chart_config);
+                }
+            });
+        }
+    });
+</script>
+
+
+
+    
+
+
+
+
+
+
+
